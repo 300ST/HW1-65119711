@@ -1,72 +1,133 @@
-void main() {
-  // Create some Book objects
-  Book book1 = Book(title: "ครอบครัวตึ๋งหนืด", author: "Author 1", isbn: "1234567890", copies: 5);
-  Book book2 = Book(title: "ขายหัวเราะ", author: "Author 2", isbn: "9876543210", copies: 3);
-
-  // Create a Member object
-  Member member1 = Member(name: "John Cena", memberId: "12345");
-
-  // Example usage of borrowBook and returnBook methods
-  member1.borrowBook(book1);
-  member1.borrowBook(book2);
-  member1.returnBook(book1);
-
-  // You can add more logic and interaction with your Book and Member objects here
-}
-
 class Book {
   String title;
   String author;
   String isbn;
   int copies;
 
-  // Constructor
-  Book({required this.title, required this.author, required this.isbn, required this.copies});
+  Book(this.title, this.author, this.isbn, this.copies);
 
-  // Borrow book
   void borrowBook() {
     if (copies > 0) {
-      copies--;
-      print("$title ยืมสำเร็จ เหลือ $copies สำเนา");
+      copies -= 1;
+      print('You have borrowed $title');
     } else {
-      print("$title ยืมไม่สำเร็จ หนังสือหมด");
+      print('No copies left to borrow');
     }
   }
 
-  // Return book
   void returnBook() {
-    copies++;
-    print("$title คืนสำเร็จ มี $copies สำเนา");
+    copies += 1;
+    print('You have returned $title');
   }
 }
 
 class Member {
-  String name; // Initialize name
-  String memberId; // Initialize memberId
-  List<Book> borrowedBooks = []; // Initialize borrowedBooks as empty list
+  String name;
+  String memberId;
+  List<Book> borrowedBooks = [];
 
-  // Constructor
-  Member({required this.name, required this.memberId});
+  Member(this.name, this.memberId);
 
-  // Borrow book
   void borrowBook(Book book) {
-    if (book.copies > 0) {
-      book.copies--;
-      borrowedBooks.add(book);
-      print("${name} ยืมหนังสือ ${book.title} สำเร็จ เหลือหนังสือ ${book.title} ${book.copies} สำเนา");
+    book.borrowBook();
+    borrowedBooks.add(book);
+  }
+
+  void returnBook(Book book) {
+    book.returnBook();
+    borrowedBooks.remove(book);
+  }
+}
+
+class Library {
+  List<Book> books = [];
+  List<Member> members = [];
+
+  void addBook(Book book) {
+    books.add(book);
+    print('Added ${book.title} to the library');
+  }
+
+  void removeBook(Book book) {
+    books.remove(book);
+    print('Removed ${book.title} from the library');
+  }
+
+  void registerMember(Member member) {
+    members.add(member);
+    print('Registered member ${member.name}');
+  }
+
+  void borrowBook(String memberId, String isbn) {
+    Member? member = members.firstWhere((m) => m.memberId == memberId, orElse: () => Member('null', 'null'));
+    Book? book = books.firstWhere((b) => b.isbn == isbn, orElse: () => Book('null', 'null', 'null', 0));
+
+    if (member.memberId != 'null' && book.isbn != 'null') {
+      member.borrowBook(book);
     } else {
-      print("${name} ยืมหนังสือ ${book.title} ไม่สำเร็จ หนังสือหมด");
+      print('Member or Book not found');
     }
   }
 
-  // Return book
-  void returnBook(Book book) {
-    if (borrowedBooks.contains(book)) {
-      book.copies++;
-      borrowedBooks.remove(book);
-      print("${name} คืนหนังสือ ${book.title} สำเร็จ มีหนังสือ ${book.title} ${book.copies} สำเนา");
+  void returnBook(String memberId, String isbn) {
+    Member? member = members.firstWhere((m) => m.memberId == memberId, orElse: () => Member('null', 'null'));
+    Book? book = books.firstWhere((b) => b.isbn == isbn, orElse: () => Book('null', 'null', 'null', 0));
+
+    if (member.memberId != 'null' && book.isbn != 'null') {
+      member.returnBook(book);
     } else {
-      print("${name} คืนหนังสือ ${book.title} ไม่สำเร็จ หนังสือยังอยู่");
+      print('Member or Book not found');
     }
   }
+
+  void listBooks() {
+    print('Books in Library:');
+    for (var book in books) {
+      print('${book.title} by ${book.author}, ISBN: ${book.isbn}, Copies: ${book.copies}');
+    }
+  }
+
+  void listMembers() {
+    print('Members:');
+    for (var member in members) {
+      print('Member: ${member.name}, ID: ${member.memberId}');
+    }
+  }
+}
+
+void main() {
+  Library library = Library();
+
+  // เพิ่มหนังสือ
+  library.addBook(Book('Book One', 'Author One', 'ISBN001', 3));
+  library.addBook(Book('Book Two', 'Author Two', 'ISBN002', 2));
+
+  // ลงทะเบียนสมาชิก
+  library.registerMember(Member('John Cena', 'MEM001'));
+  library.registerMember(Member('Randy Rrton', 'MEM002'));
+
+  // รายการหนังสือ
+  library.listBooks();
+  print('');
+
+  // รายการสมาชิก
+  library.listMembers();
+  print('');
+
+  // ยืมหนังสือ
+  library.borrowBook('MEM001', 'ISBN001');
+  library.borrowBook('MEM002', 'ISBN002');
+  print('');
+
+  // รายการหนังสือหลังจากยืม
+  library.listBooks();
+  print('');
+
+  // คืนหนังสือ
+  library.returnBook('MEM001', 'ISBN001');
+  library.returnBook('MEM002', 'ISBN002');
+  print('');
+
+  // รายการหนังสือหลังจากคืน
+  library.listBooks();
 }
